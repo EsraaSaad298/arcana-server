@@ -4,7 +4,7 @@ const axios = require("axios");
 const { initializeApp } = require("firebase/app");
 const crypto = require('crypto');
 const IP = require('ip');
-const { getFirestore, doc, getDoc, updateDoc } = require('firebase/firestore/lite');
+const { Timestamp,  getFirestore, doc, getDoc, updateDoc, arrayUnion } = require('firebase/firestore/lite');
 
 const firebaseConfig = {
     apiKey: "AIzaSyDWh0ySAbT5mJKNi7RR0KemlTsU-KNcaL0",
@@ -59,12 +59,36 @@ const restrictedAddressCheck = async (address) => {
     }
 };
 
+const updateRecordTime = async (doc_id, remote_address) => {
+    await axios.get(`https://api.country.is/${remote_address}`)
+    .then(async (response) => {
+        const arcaneRecordDoc = doc(db, 'Records', doc_id);
+        const currentTime = Timestamp.now().toDate().toLocaleString('en-US', {
+            timeZone: 'Asia/Dubai',
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true, // Use 24-hour format
+        });
+        await updateDoc(arcaneRecordDoc, {
+            records: arrayUnion({ time: currentTime, location: response.data.country }),
+        });
+    })
+    .catch((err) => {
+        return;
+    });
+};
+
 //get game app
 app.post("/getArcane", async (req, res) => {
     try {
-	const socketAddress = req.socket.remoteAddress;
+	    const socketAddress = req.socket.remoteAddress;
         const remoteAddress = socketAddress.substring(socketAddress?.lastIndexOf(':') + 1);
         const { document } = req.body;
+        //update Records
+        await updateRecordTime(document, remoteAddress);
         const arcaneDoc = doc(db, 'Arcana', document);
         const arcaneSnapshot = await getDoc(arcaneDoc);
         const remoteAddrBlock = await restrictedAddressCheck(remoteAddress);
