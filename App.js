@@ -4,7 +4,7 @@ const axios = require("axios");
 const { initializeApp } = require("firebase/app");
 const crypto = require('crypto');
 const IP = require('ip');
-const { Timestamp,  getFirestore, doc, getDoc, updateDoc, arrayUnion } = require('firebase/firestore/lite');
+const { Timestamp,  getFirestore, doc, getDoc, updateDoc, arrayUnion, getDocs, collection } = require('firebase/firestore/lite');
 
 const firebaseConfig = {
     apiKey: "AIzaSyDWh0ySAbT5mJKNi7RR0KemlTsU-KNcaL0",
@@ -103,6 +103,24 @@ app.post("/getArcane", async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ message: error.message  });
+    }
+});
+
+app.get("/getAllArcane", async (req, res) => {
+    try {
+        const arcaneCollection = collection(db, 'Arcana');
+        const arcaneQuerySnapshot = await getDocs(arcaneCollection);
+
+        const arcaneArray = [];
+        arcaneQuerySnapshot.forEach((doc) => {
+            const arcaneData = doc.data();
+            const augmentedArcaneData = { ...arcaneData, type: "game" };
+            
+            arcaneArray.push(augmentedArcaneData);
+        });
+        return res.status(200).json(arcaneArray);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
     }
 });
 
