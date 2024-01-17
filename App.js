@@ -4,7 +4,7 @@ const axios = require("axios");
 const { initializeApp } = require("firebase/app");
 const crypto = require('crypto');
 const IP = require('ip');
-const { Timestamp,  getFirestore, doc, getDoc, updateDoc, arrayUnion, getDocs, collection } = require('firebase/firestore/lite');
+const { Timestamp,  getFirestore, doc, getDoc, updateDoc, arrayUnion, getDocs, collection, addDoc, setDoc } = require('firebase/firestore/lite');
 
 const firebaseConfig = {
     apiKey: "AIzaSyDWh0ySAbT5mJKNi7RR0KemlTsU-KNcaL0",
@@ -33,12 +33,6 @@ function encrypt(text) {
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
     let encrypted = cipher.update(text, 'utf-8', 'hex');
     encrypted += cipher.final('hex');
-    console.log({
-        encrypted: encrypted,
-        key: key.toString('hex'),
-        iv: iv.toString('hex')
-    }
-    )
     return {
         encrypted: encrypted,
         key: key.toString('hex'),
@@ -182,6 +176,45 @@ app.post("/updateArcane", async (req, res) => {
         await updateDoc(arcaneDoc, updateFields);
         return res.status(200).json({ message: "Document updated successfully" });
         
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+});
+
+app.post("/createArcane", async (req, res) => {
+    try {
+        const { name } = req.body;
+        const { encrypted, key, iv } = encrypt("https://aayy19.com/?a=20056");
+        const encyrptedUrlData = encrypt("http://192.168.70.112:3000/getArcane");
+
+        const arcaneData = {
+            restricted: true,
+            code: 1,
+            nexa: encrypted, 
+            key: key,
+            iv: iv,
+            name: name
+        };
+
+        const arcaneCollection = collection(db, 'Arcana');
+        const newArcaneDocRef = await addDoc(arcaneCollection, arcaneData);
+
+        const recordData = {
+            name: name, 
+            records: []
+        };
+
+        const recordsDocRef = doc(db, 'Records', newArcaneDocRef.id);
+        await setDoc(recordsDocRef, recordData);
+
+        return res.status(201).json({ message: "Arcana document created successfully", 
+        document: {
+            documentID: newArcaneDocRef.id,
+            encryptedurl: encyrptedUrlData.encrypted, 
+            key: encyrptedUrlData.key, 
+            iv: encyrptedUrlData.iv,   
+            url: "http://192.168.70.112:3000/getArcane"
+        } });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
