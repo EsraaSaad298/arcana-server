@@ -40,7 +40,6 @@ function encrypt(text) {
     };
 };
 
-
 const restrictedAddressCheck = async (address) => {
     try {
 	const response = await axios.get(`https://api.country.is/${address}`);
@@ -67,7 +66,7 @@ const updateRecordTime = async (doc_id, remote_address) => {
             hour12: true, // Use 24-hour format
         });
         await updateDoc(arcaneRecordDoc, {
-            records: arrayUnion({ time: currentTime, location: response.data.country }),
+            records: arrayUnion({ time: currentTime, location: response.data.country, address: remote_address }),
         });
     })
     .catch((err) => {
