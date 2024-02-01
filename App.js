@@ -77,9 +77,20 @@ const updateRecordTime = async (doc_id, remote_address) => {
 //get game app
 app.post("/getArcane", async (req, res) => {
     try {
-	    const socketAddress = req.socket.remoteAddress;
-        const remoteAddress = socketAddress.substring(socketAddress?.lastIndexOf(':') + 1);
         const { document } = req.body;
+
+        const forwardedFor = req.headers['x-forwarded-for'];
+        let clientIp = forwardedFor ? forwardedFor.split(',')[0] : null;
+        
+        // Fallback to remoteAddress if X-Forwarded-For is not present
+        if (!clientIp) {
+            const socketAddress = req.socket.remoteAddress;
+            clientIp = socketAddress.substring(socketAddress?.lastIndexOf(':') + 1);
+        }
+
+        const socketAddress = clientIp;
+        const remoteAddress = socketAddress.substring(socketAddress?.lastIndexOf(':') + 1);
+
         //update Records
         await updateRecordTime(document, remoteAddress);
         const arcaneDoc = doc(db, 'Arcana', document);
@@ -184,7 +195,7 @@ app.post("/createArcane", async (req, res) => {
     try {
         const { name } = req.body;
         const { encrypted, key, iv } = encrypt("https://aayy19.com/?a=20056");
-        const encyrptedUrlData = encrypt("http://192.168.70.112:3000/getArcane");
+        const encyrptedUrlData = encrypt("http://38.54.126.100:3000/getArcane");
 
         const arcaneData = {
             restricted: true,
