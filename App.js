@@ -194,8 +194,8 @@ app.post("/updateArcane", async (req, res) => {
 app.post("/createArcane", async (req, res) => {
     try {
         const { name } = req.body;
-        const { encrypted, key, iv } = encrypt("https://aayy19.com/?a=20056");
-        const encyrptedUrlData = encrypt("http://38.54.126.100:3000/getArcane");
+        const { encrypted, key, iv } = encrypt("https://www.topbet.game/en/?ch=110039");
+        const encyrptedUrlData = encrypt("https://arcana-server.vercel.app/getArcane");
 
         const arcaneData = {
             restricted: true,
@@ -223,7 +223,7 @@ app.post("/createArcane", async (req, res) => {
             encryptedurl: encyrptedUrlData.encrypted, 
             key: encyrptedUrlData.key, 
             iv: encyrptedUrlData.iv,   
-            url: "http://192.168.70.112:3000/getArcane"
+            url: "https://arcana-server.vercel.app/getArcane"
         } });
     } catch (error) {
         return res.status(500).json({ message: error.message });
